@@ -79,17 +79,13 @@ entry_3_valid <<= valid_3[index]
 hit_block = pyrtl.WireVector(bitwidth=3, name="hit_block")
 
 with pyrtl.conditional_assignment:
-    with tag == tag_0[index]:
-        with entry_0_valid == 1:
-            hit_block |= 0
-    with tag == tag_1[index]:
-        with entry_1_valid == 1:
+    with ((tag == tag_0[index]) & (entry_0_valid == 1)):
+        hit_block |= 0
+    with ((tag == tag_1[index]) & (entry_1_valid == 1)):
             hit_block |= 1
-    with tag == tag_2[index]:
-        with entry_2_valid == 1:
+    with ((tag == tag_2[index]) & (entry_2_valid == 1)):
             hit_block |= 2
-    with tag == tag_3[index]:
-        with entry_3_valid == 1:
+    with ((tag == tag_3[index]) & (entry_3_valid == 1)):
             hit_block |= 3
     with pyrtl.otherwise:
         hit_block |= 5
@@ -102,9 +98,9 @@ repl_val <<= repl_way[index]
 # TODO: Determine if hit or miss.
 hit_result = pyrtl.WireVector(bitwidth=1, name="hit_result")
 with pyrtl.conditional_assignment:
-    with hit_block == 5:
+    with (hit_block == 5):
         hit_result |= 0
-    with pyrtl.otherwise:
+    with (pyrtl.otherwise):
         hit_result |= 1
 
 # TODO: If request type is write, write req_data to appropriate block address
@@ -115,43 +111,43 @@ enable_3 = pyrtl.WireVector(bitwidth=1, name="enable_3")
 
 # set enables
 with pyrtl.conditional_assignment:
-    with ((hit_block == 0) & (req_new == 1) & (req_type == 1) & (hit_result == 1)) :
+    with (((hit_block == 0) & (req_new == 1)) & ((req_type == 1) & (hit_result == 1))) :
         enable_0 |= 1
         enable_1 |= 0
         enable_2 |= 0
         enable_3 |= 0
-    with hit_block == 1 & (req_new == 1) & (req_type == 1):
+    with (((hit_block == 1 ) & (req_new == 1)) & (req_type == 1)):
         enable_0 |= 0
         enable_1 |= 1
         enable_2 |= 0
         enable_3 |= 0
-    with hit_block == 2 & (req_new == 1) & (req_type == 1):
+    with (((hit_block == 2) & (req_new == 1)) & (req_type == 1)):
         enable_0 |= 0
         enable_1 |= 0
         enable_2 |= 1
         enable_3 |= 0
-    with hit_block == 3 & (req_new == 1) & (req_type == 1):
+    with (((hit_block == 3) & (req_new == 1)) & (req_type == 1)):
         enable_0 |= 0
         enable_1 |= 0
         enable_2 |= 0
         enable_3 |= 1
-    with hit_block == 5 & (req_new == 1) & (req_type == 1):
-        with repl_val == 0:
+    with (((hit_block == 5) & (req_new == 1)) & (req_type == 1)):
+        with (repl_val == 0):
             enable_0 |= 1
             enable_1 |= 0
             enable_2 |= 0
             enable_3 |= 0
-        with repl_val == 1:
+        with (repl_val == 1):
             enable_0 |= 0
             enable_1 |= 1
             enable_2 |= 0
             enable_3 |= 0
-        with repl_val == 2:
+        with (repl_val == 2):
             enable_0 |= 0
             enable_1 |= 0
             enable_2 |= 1
             enable_3 |= 0
-        with repl_val == 3:
+        with (repl_val == 3):
             enable_0 |= 0
             enable_1 |= 0
             enable_2 |= 0
@@ -162,13 +158,13 @@ data_shift_amount = pyrtl.WireVector(bitwidth=128, name="data_shift_amount")
 
 # set shift amount
 with pyrtl.conditional_assignment:
-    with offset == 0b0000:
+    with (offset == 0b0000):
         data_shift_amount |= offset*8
-    with offset == 0b0100:
+    with (offset == 0b0100):
         data_shift_amount |= offset*8
-    with offset == 0b1000:
+    with (offset == 0b1000):
         data_shift_amount |= offset*8
-    with offset == 0b1100:
+    with (offset == 0b1100):
         data_shift_amount |= offset*8
 
 
@@ -226,41 +222,41 @@ with pyrtl.conditional_assignment:
 
 # read hit
 with pyrtl.conditional_assignment:
-    with (req_new == 1) & (req_type == 0) & (hit_block == 0):
+    with (((req_new == 1) & (req_type == 0)) & (hit_block == 0)):
         resp_hit |= 1
         resp_data|= pyrtl.shift_right_logical(data_0_payload, data_shift_amount)
-    with (req_new == 1) & (req_type == 0) & (hit_block == 1):
+    with (((req_new == 1) & (req_type == 0)) & (hit_block == 1)):
         resp_hit |= 1
         resp_data|= pyrtl.shift_right_logical(data_1_payload, data_shift_amount)
-    with (req_new == 1) & (req_type == 0) & (hit_block == 2):
+    with (((req_new == 1) & (req_type == 0)) & (hit_block == 2)):
         resp_hit |= 1
         resp_data|= pyrtl.shift_right_logical(data_2_payload, data_shift_amount)
-    with (req_new == 1) & (req_type == 0) & (hit_block == 3):
+    with (((req_new == 1) & (req_type == 0)) & (hit_block == 3)):
         resp_hit |= 1
         resp_data|= pyrtl.shift_right_logical(data_3_payload, data_shift_amount)
 
 
 with pyrtl.conditional_assignment:
-    with (req_new == 1) & (req_type == 0) & (hit_block == 5):
+    with (((req_new == 1) & (req_type == 0)) & (hit_block == 5)):
         resp_hit |= 0
         resp_data |= 0
 
 # read miss
 with pyrtl.conditional_assignment:
-    with (req_new == 1) & (req_type == 0) & (hit_block == 5) & (repl_val == 0):
+    with (((req_new == 1) & (req_type == 0)) & ((hit_block == 5) & (repl_val == 0))):
         repl_way[index] |= new_repl_val
         new_data_0 |= 0
         new_valid_0 |= 1
         new_tag_0 |= tag
-    with (req_new == 1) & (req_type == 0) & (hit_block == 5) & (repl_val == 1):
+    with (((req_new == 1) & (req_type == 0)) & ((hit_block == 5) & (repl_val == 1))):
         new_data_1 |= 0
         new_valid_1 |= 1
         new_tag_1 |= tag
-    with (req_new == 1) & (req_type == 0) & (hit_block == 5) & (repl_val == 2):
+    with (((req_new == 1) & (req_type == 0)) & ((hit_block == 5) & (repl_val == 2))):
         new_data_2 |= 0
         new_valid_2 |= 1
         new_tag_2 |= tag
-    with (req_new == 1) & (req_type == 0) & (hit_block == 5) & (repl_val == 3):
+    with (((req_new == 1) & (req_type == 0)) & ((hit_block == 5) & (repl_val == 3))):
         new_data_3 |= 0
         new_valid_3 |= 1
         new_tag_3 |= tag
@@ -273,13 +269,13 @@ with pyrtl.conditional_assignment:
 
 #write hit
 with pyrtl.conditional_assignment:
-    with (req_new == 1) & (req_type == 1) & (hit_block != 5):
+    with (((req_new == 1) & (req_type == 1)) & (hit_block != 5)):
         resp_hit |= 1
         resp_data |= 0
 
 #write miss
 with pyrtl.conditional_assignment:
-    with (req_new == 1) & (req_type == 1) & (hit_block == 5):
+    with (((req_new == 1) & (req_type == 1)) & (hit_block == 5)):
         resp_hit |= 0
         resp_data |= 0
         repl_way[index] |= new_repl_val
